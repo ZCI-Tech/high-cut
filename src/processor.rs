@@ -67,7 +67,7 @@ impl Processor {
     }
 
     pub fn calculate_keep_segments(&self, silences: &[SilenceSegment], total_duration: f64) -> Vec<(f64, f64)> {
-        let mut keep_segments = Vec::new();
+        let mut raw_segments = Vec::new();
         let mut last_end = 0.0;
 
         for silence in silences {
@@ -75,8 +75,8 @@ impl Processor {
             let seg_end = (silence.start - self.config.margin_s).max(seg_start);
             let duration = seg_end - seg_start;
 
-            if duration >= 0.1 { // Minimal threshold to avoid degenerate segments
-                self.add_segments(&mut keep_segments, seg_start, duration);
+            if duration >= 0.1 {
+                raw_segments.push((seg_start, duration));
             }
             last_end = silence.end + self.config.margin_s;
         }
@@ -84,11 +84,18 @@ impl Processor {
         if last_end < total_duration {
             let duration = total_duration - last_end;
             if duration >= 0.1 {
-                self.add_segments(&mut keep_segments, last_end, duration);
+                raw_segments.push((last_end, duration));
             }
         }
 
-        self.coalesce_segments(keep_segments)
+        let coalesced = self.coalesce_segments(raw_segments);
+        let mut final_segments = Vec::new();
+        
+        for (start, duration) in coalesced {
+            self.add_segments(&mut final_segments, start, duration);
+        }
+
+        final_segments
     }
 
     pub fn coalesce_segments(&self, raw_segments: Vec<(f64, f64)>) -> Vec<(f64, f64)> {
