@@ -1,0 +1,31 @@
+[package]
+name = "high-cut"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "high_cut"
+path = "src/lib.rs"
+
+[[bin]]
+name = "high-cut"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+walkdir = "2.5"
+uuid = { version = "1.0", features = ["v4"] }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "process_bench"
+harness = false
